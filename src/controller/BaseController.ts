@@ -1,13 +1,13 @@
-import { Model } from '@/models/Model';
-import { Controller } from '@/controller/Controller';
-import { Request } from '@/api';
+import { Model } from 'models/Model';
+import { Controller } from 'controller/Controller';
+import { Request } from 'core';
 import { Response } from 'express';
-import { Context } from '@/api/Context';
+import { Context } from 'core/Context';
 
 /**
- *
+ * Basic CRUD Controller
  */
-class BaseController<T extends Model> implements Controller<T> {
+export class BaseController<T extends Model> implements Controller<T> {
     protected _id: string;
     protected _name: string;
     protected _path: string;
@@ -32,43 +32,111 @@ class BaseController<T extends Model> implements Controller<T> {
         this._context = context;
     }
 
+    /**
+     * Retrieve controller identifier
+     *
+     * @return string
+     */
     public get id(): string {
         return this._id;
     }
 
+    /**
+     * Retrieve controller name
+     *
+     * @return string
+     */
     public get name(): string {
         return this._name;
     }
 
+    /**
+     * Retrieve controller path
+     *
+     * @return string
+     */
     public get path(): string {
         return this._path;
     }
 
-    create(
+    /**
+     * Create a new data entity
+     *
+     * @param request
+     *        The request object
+     * @param response
+     *        The response object
+     *
+     * @return Promise<void>
+     */
+    public create(
         request: Request,
         response: Response<any, Record<string, any>>
     ): Promise<void> {
         throw new Error('Method not implemented.');
     }
-    readAll(
+
+    /**
+     * Read all data entities availabe in the database table
+     *
+     * @param request
+     *        The request object
+     * @param response
+     *        The response object
+     *
+     * @return Promise<void>
+     */
+    public readAll(
         request: Request,
         response: Response<any, Record<string, any>>
     ): Promise<void> {
         throw new Error('Method not implemented.');
     }
-    readOne(
+
+    /**
+     * Read one data entity specified by a provided identifer in the request
+     *
+     * @param request
+     *        The request object
+     * @param response
+     *        The response object
+     *
+     * @return Promise<void>
+     */
+    public readOne(
         request: Request,
         response: Response<any, Record<string, any>>
     ): Promise<void> {
         throw new Error('Method not implemented.');
     }
-    update(
+
+    /**
+     * Update an existing record
+     *
+     * @param request
+     *        The request object
+     * @param response
+     *        The response object
+     *
+     * @return Promise<void>
+     */
+    public update(
         request: Request,
         response: Response<any, Record<string, any>>
     ): Promise<void> {
         throw new Error('Method not implemented.');
     }
-    delete(
+
+    /**
+     *
+     * @param request
+     *        The request object
+     * @param response
+     *        The response object
+     *
+     * @return Promise<void>
+     */
+    public delete(
         request: Request,
         response: Response<any, Record<string, any>>
     ): Promise<void> {

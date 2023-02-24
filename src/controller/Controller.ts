@@ -1,5 +1,5 @@
-import { Request, Response } from '@/api';
-import { Model } from '@/models/Model';
+import { Request, Response } from 'core';
+import { Model } from 'models/Model';
 
 export interface Controller<T extends Model> {
     id: string;

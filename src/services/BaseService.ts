@@ -1,7 +1,7 @@
-import { Context } from '@/api/Context';
-import { DTO, KeyBatch, KeyType, ModelCTOR, RequestOptions } from '@/api/types';
-import { Model } from '@/models/Model';
-import { Service } from '@/services/Service';
+import { Context } from 'core/Context';
+import { DTO, KeyBatch, KeyType, ModelCTOR, RequestOptions } from 'core/types';
+import { Model } from 'models/Model';
+import { Service } from 'services/Service';
 
 /**
  * The BaseService is a fully implemented CRUD service ready to use; and may

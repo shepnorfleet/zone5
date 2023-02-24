@@ -1,4 +1,4 @@
-import { DTO, KeyType, KeyBatch, RequestOptions } from '@/api/types';
+import { DTO, KeyType, KeyBatch, RequestOptions } from 'core/types';
 
 /**
  *
