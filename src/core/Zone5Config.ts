@@ -1,7 +1,39 @@
 import { RouterOptions } from 'express';
-import { Identity, Middleware, UserIdentifier } from 'core/types';
+import { Middleware, UserIdentifier } from 'core/types';
 import { DbDriver } from 'core/db/DbDriver';
 import { Zone5 } from 'core/Zone5';
+
+/**
+ * Zone5 Callbacks
+ */
+export interface Zone5Callbacks {
+    /**
+     * Before the microservice starts listening for a request
+     */
+    readonly doBeforeStart?: (this: Zone5) => void;
+
+    /**
+     * After the microservice starts listening for a request
+     *
+     * @param err
+     *        An error object; if the startup failed for some reason.
+     */
+    readonly doAfterStart?: (this: Zone5) => void;
+
+    /**
+     * Before the microservice stops listening for a request
+     */
+    readonly doBeforeStop?: (this: Zone5) => void;
+
+    /**
+     * After the microservice stops listening for a request
+     *
+     *  @param err
+     *         An error object; if the service encountered an error while
+     *         stoping.
+     */
+    readonly doAfterStop?: (this: Zone5, err?: Error) => void;
+}
 
 /**
  * Zone 5 Configuration
@@ -59,32 +91,5 @@ export interface Zone5Config<RoleType = string> {
      * Allows the developer to do whatever processing is necessary at certain
      * stages of execution
      */
-    readonly callback?: {
-        /**
-         * Before the microservice starts listening for a request
-         */
-        readonly beforeStart?: (this: Zone5) => void;
-
-        /**
-         * After the microservice starts listening for a request
-         *
-         * @param err
-         *        An error object; if the startup failed for some reason.
-         */
-        readonly afterStart?: (this: Zone5) => void;
-
-        /**
-         * Before the microservice stops listening for a request
-         */
-        readonly beforeStop?: (this: Zone5) => void;
-
-        /**
-         * After the microservice stops listening for a request
-         *
-         *  @param err
-         *         An error object; if the service encountered an error while
-         *         stoping.
-         */
-        readonly afterStop?: (this: Zone5, err?: Error) => void;
-    };
+    readonly callbacks?: Zone5Callbacks;
 }

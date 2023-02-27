@@ -1,8 +1,14 @@
-import { Zone5Config } from 'core/Zone5Config';
 import { Server } from 'node:http';
 import express, { Express, Router } from 'express';
+import { Zone5Config } from 'core/Zone5Config';
+import { DbConnectionManager } from 'core/db';
 import { Context } from 'core/Context';
-import { ContextImpl } from 'core/ContextImpl';
+import {
+    getDoAfterStartCallback,
+    getDoAfterStopCallback,
+    getDoBeforeStartCallback,
+    getDoBeforeStopCallback,
+} from 'core/callbacks';
 
 /**
  * Zone5 Service Object
@@ -10,9 +16,10 @@ import { ContextImpl } from 'core/ContextImpl';
 export class Zone5 {
     private readonly _config: Zone5Config;
     private _context: Context;
-    private _app: Express;
+    private _express: Express;
     private _router: Router;
     private _server: Server | null;
+    private _manager: DbConnectionManager;
 
     private static instance: Zone5 | null = null;
 
@@ -24,73 +31,105 @@ export class Zone5 {
     }
 
     /**
+     * Retrieve the Express application
+     *
+     * @return Express
+     */
+    public get app(): Express {
+        return this._express;
+    }
+
+    /**
+     * Retrieve a reference to the API context
+     *
+     * @return Context
+     */
+    public get context(): Context {
+        return this._context;
+    }
+
+    /**
      * CTOR
      *
      * @param config
      */
     private constructor(config: Zone5Config) {
         this._config = config;
-        this._app = express();
+        this._express = express();
         this._router = Router(this.config.routerOptions);
-        this._context = new ContextImpl(this);
+        this._server = null;
+
+        if (config.dbDriver && config.dbDriver.manager) {
+            this._manager = new config.dbDriver.manager(config.dbDriver);
+        } else {
+            throw new Error(
+                'Error: Zone5 Configuration was missing the connection manager constructor.'
+            );
+        }
     }
 
     /**
-     * Retrieve the Express application
+     * Retrieve the connection manager instance
      *
-     * @return Express
+     * @return DbConnectionManager
      */
-    public getApp(): Express {
-        return this._app;
+    public get manager(): DbConnectionManager {
+        return this._manager;
     }
 
     /**
-     * Retrieve the Router for the application
-     *
-     * @return Router
-     */
-    public getRouter(): Router {
-        return this._router;
-    }
-
-    /**
-     *
+     * Starting listening for network connections
      */
     public listen() {
-        //Configure Router with Middleware
-        if (this.config.middleware && this.config.middleware.length > 0) {
-            this._router.use(...this.config.middleware);
+        if (this._server === null) {
+            const doBeforeStart = getDoBeforeStartCallback(this.config);
+            const doAfterStart = getDoAfterStartCallback(this.config);
+
+            //call 'Before Start' callback
+            doBeforeStart.call(this);
+
+            //Configure Router with Middleware
+            if (this.config.middleware && this.config.middleware.length > 0) {
+                this._router.use(...this.config.middleware);
+            }
+
+            //TODO: Register Decorated Controllers
+
+            //Tranfer router to the express app
+            this._express.use(this._router);
+
+            this._server = this._express.listen(this.config.listenPort, () => {
+                //call 'After Start' callback
+                doAfterStart.call(this);
+            });
+        } else {
+            throw new Error(
+                'Error: A Call to start Zone5 was made; however, Zone5 was already running.'
+            );
         }
-
-        //TODO: Register Decorated Controllers
-
-        //Tranfer router to the express app
-        this._app.use(this._router);
-
-        if (this.config.callback && this.config.callback.beforeStart) {
-            this.config.callback.beforeStart.call(this);
-        }
-
-        this._server = this._app.listen(this.config.listenPort, () => {});
     }
 
     /**
      * Stop the Zone5 server
      */
     public stop() {
-        if (this.config.callback && this.config.callback.beforeStop) {
-            this.config.callback?.beforeStop.call(this);
-        }
+        if (this._server !== null) {
+            const doBeforeStop = getDoBeforeStopCallback(this.config);
+            const doAfterStop = getDoAfterStopCallback(this.config);
 
-        if (this._server) {
+            //call 'Before Stop' callback
+            doBeforeStop.call(this);
+
             this._server.close((err?: Error) => {
-                if (err) {
-                    console.error(err);
-                }
-                if (this.config.callback && this.config.callback.afterStop) {
-                    this.config.callback.afterStop.call(this, err);
-                }
+                this._server = null;
+
+                //call 'After Stop' callback
+                doAfterStop.call(this, err);
             });
+        } else {
+            throw new Error(
+                'Error: A Call to stop Zone5 was made; however, Zone5 is not running.'
+            );
         }
     }
 
@@ -103,7 +142,12 @@ export class Zone5 {
     public static start(config: Zone5Config): void {
         if (Zone5.instance === null) {
             Zone5.instance = new Zone5(config);
-            Zone5.instance.listen();
+
+            try {
+                Zone5.instance.listen();
+            } catch (e) {
+                console.error(e);
+            }
         } else {
             throw new Error('Error: Zone5 may only be started once.');
         }

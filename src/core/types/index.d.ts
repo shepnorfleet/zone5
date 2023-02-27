@@ -1,5 +1,6 @@
 import { NextHandleFunction } from 'connect';
 import { DbTypes, JsonTypes, Order } from 'core/constants';
+import { ApiRequest } from 'core/ApiRequest';
 import { Context } from 'core/Context';
 import { Model } from 'models/Model';
 import { Controller } from 'controller/Controller';
@@ -153,7 +154,7 @@ export type Identity<RoleType = string> = {
  * A user identity acquistion method
  */
 export type UserIdentifier<RoleType = string> = (
-    request: Request
+    request: ApiRequest
 ) => Identity<RoleType> | null;
 
 /**

@@ -1,5 +1,7 @@
-import { Identity, UserRoleList } from 'core/types';
+import { Identity } from 'core/types';
 import { Context } from 'core/Context';
+import { Zone5Config } from 'core/Zone5Config';
+import { ApiRequest } from 'core/ApiRequest';
 
 /**
  * Endpoint access control methods will be bound to this class so that they
@@ -31,9 +33,9 @@ export class Security<RoleType = string> {
      * @param request
      *        A service Request object
      */
-    public constructor(context: Context, request: Request) {
-        this._identity = context.getZone5Config().identifyUser(request);
+    public constructor(context: Context, request: ApiRequest) {
+        this._identity = (
+            context.application.config as Zone5Config<RoleType>
+        ).identifyUser(request);
     }
-
-    hasOneOf(roles: UserRoleList<RoleType>) {}
 }

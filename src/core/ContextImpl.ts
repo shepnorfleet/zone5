@@ -1,19 +1,16 @@
 import { Context } from 'core/Context';
-import express, { Express, Router } from 'express';
-import { Server } from 'http';
-import { ConnectType } from 'core/constants';
-import { DbConnectionManager, DbDatabase } from 'core/db';
+import { DbTransaction } from 'core/db';
 import { Zone5 } from 'core/Zone5';
-import { Zone5Config } from './Zone5Config';
-import { Security } from './Security';
+import { Security } from 'core/Security';
+import { ApiRequest } from 'core/ApiRequest';
 
 /**
  * The nominal implementation of the Zone5 Context interface
  */
 export class ContextImpl implements Context {
-    private _service: Zone5;
-    private _manager: DbConnectionManager;
-    private _startTime: number;
+    private _application: Zone5;
+    private _transaction: DbTransaction;
+    private _security: Security;
 
     /**
      * CTOR
@@ -21,54 +18,35 @@ export class ContextImpl implements Context {
      * @param service
      *        The Zone5 instance of the service
      */
-    constructor(service: Zone5) {
-        const driver = service.config.dbDriver;
-
-        //Initialize Members
-        this._manager = new driver.manager(driver);
-        this._service = service;
+    constructor(application: Zone5, request: ApiRequest) {
+        this._application = application;
+        this._security = new Security(this, request);
     }
 
     /**
+     * Retrieve the Zone5 Application instance
      *
-     * @returns
+     * @return Zone5
      */
-    public getZone5Config(): Zone5Config {
-        return this._service.config;
+    public get application(): Zone5 {
+        return this._application;
     }
 
     /**
-     * Retrieve the time the server started listening for connectionss
-     *
-     * @returns number time in milliseconds from epoch
-     */
-    public getStartTime(): number {
-        return this._startTime;
-    }
-
-    /**
-     * Retrieve the database connection manager
-     *
-     * @returns DBConnectionManager
-     */
-    public getDbManager(): DbConnectionManager {
-        return this._manager;
-    }
-
-    /**
+     * Get the access security object for binding request security functions.
      *
      * @param request
+     *        The
      * @returns
      */
-    public getSecurity(request: Request): Security | null {
-        let rVal = null;
+    public get security(): Security {
+        return this._security;
+    }
 
-        try {
-            rVal = new Security(this, request);
-        } catch (e) {
-            console.error(e);
-        }
-
-        return rVal;
+    /**
+     *
+     */
+    public get transaction(): DbTransaction {
+        return this._transaction;
     }
 }

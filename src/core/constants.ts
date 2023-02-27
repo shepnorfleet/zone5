@@ -1,6 +1,12 @@
 import { json, urlencoded } from 'express';
 import * as cors from 'cors';
 
+export const DefaultAPIPath = 'api/';
+export const DefaultAPIVersion = 'v1/';
+export const DefaultPort = 4000;
+export const DefaultDatabaseDedicatedConnection = false;
+export const DefaultDatabaseDedicatedConnectionRatio = 0.2;
+
 export const enum Order {
     Ascending = 'asc',
     AscendingNullsLast = 'asc nulls last',
@@ -11,12 +17,6 @@ export const enum ModelType {
     Info = 'InfoModel',
     Entity = 'EntityModel',
 }
-
-export const DefaultAPIPath = 'api/';
-export const DefaultAPIVersion = 'v1/';
-export const DefaultPort = 4000;
-export const DefaultDatabaseDedicatedConnection = false;
-export const DefaultDatabaseDedicatedConnectionRatio = 0.2;
 
 /**
  * An enumeration of supported connection types
