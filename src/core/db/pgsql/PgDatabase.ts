@@ -1,13 +1,13 @@
 import { DbDatabase } from 'core/db/DbDatabase';
 import { PgWrapper } from 'core/db/pgsql/PgWrapper';
-import { PgConfig } from 'zone5/db/pgsql/PgConfig';
 import { PgTransaction } from 'core/db/pgsql/PgTransaction';
 import { PgStatement } from 'core/db/pgsql/PgStatement';
 import { PgResult } from 'core/db/pgsql/PgResult';
+import { DbConfig } from 'core/db/DbConfig';
 
 export class PgDatabase implements DbDatabase {
     private _id: number;
-    private _config?: PgConfig;
+    private _config?: DbConfig;
     private _wrapper?: PgWrapper;
     private _transaction?: PgTransaction;
 
@@ -20,9 +20,9 @@ export class PgDatabase implements DbDatabase {
     /**
      *
      */
-    public get config(): PgConfig {
+    public get config(): DbConfig {
         if (this._wrapper) {
-            return this._wrapper.config;
+            return this._wrapper.getConfig();
         } else if (this._config) {
             return this._config;
         } else {
@@ -39,7 +39,7 @@ export class PgDatabase implements DbDatabase {
      *        If run from a pool; a wrapper is provided
      *
      */
-    public constructor(initializer: PgConfig | PgWrapper) {
+    public constructor(initializer: DbConfig | PgWrapper) {
         this._id = PgDatabase._sequence++;
 
         if (initializer instanceof PgWrapper) {

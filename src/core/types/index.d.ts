@@ -234,7 +234,7 @@ export interface Entity {
      *
      * ```
      * //columnName will contain 'last_name' after the statement
-     * const columnName = model.columnName(model=>model.lastName);
+     * const columnName = model.column(model=>model.lastName);
      * ```
      *
      * @param expression

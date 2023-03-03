@@ -1,7 +1,6 @@
 import { PgDatabase } from 'core/db/pgsql/PgDatabase';
 import { PgPool } from 'core/db/pgsql/PgPool';
-import { PgConfig } from 'zone5/db/pgsql/PgConfig';
-import { ConnectType } from '..';
+import { ConnectType, DbConfig } from 'core/db';
 
 /**
  * The wrapper is used by the pool to manage the connection in the pool
@@ -35,6 +34,15 @@ export class PgWrapper {
         this._available = true;
         this._last_used = 0;
         this._connected = 0;
+        this._connectType = type;
+    }
+
+    /**
+     *
+     * @returns
+     */
+    public getConfig(): DbConfig {
+        return this._pool.configSet[this._connectType];
     }
 
     /**
@@ -53,6 +61,9 @@ export class PgWrapper {
         return rVal;
     }
 
+    /**
+     *
+     */
     public checkin(): void {
         this._available = true;
         this._last_used = new Date().getTime();
@@ -65,7 +76,7 @@ export class PgWrapper {
         let rVal = false;
 
         //We don't expire in-use connections
-        if (this._available && this.config !== null) {
+        if (this._available && this.getConfig() !== null) {
         }
 
         return rVal;

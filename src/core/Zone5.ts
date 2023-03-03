@@ -1,6 +1,7 @@
 import { Server } from 'node:http';
 import express, { Express, Router } from 'express';
 import { Zone5Config } from 'core/Zone5Config';
+import { AuthAdapter, FailClosedAdapter, TestingAdapter } from 'core/auth';
 import { DbConnectionManager } from 'core/db';
 import { Context } from 'core/Context';
 import {
@@ -20,6 +21,7 @@ export class Zone5 {
     private _router: Router;
     private _server: Server | null;
     private _manager: DbConnectionManager;
+    private _authnz: Record<string, AuthAdapter>;
 
     private static instance: Zone5 | null = null;
 
@@ -49,16 +51,28 @@ export class Zone5 {
     }
 
     /**
+     * Retrieve the connection manager instance
+     *
+     * @return DbConnectionManager
+     */
+    public get manager(): DbConnectionManager {
+        return this._manager;
+    }
+
+    /**
      * CTOR
      *
      * @param config
+     *        The Zone5 Configuration
      */
     private constructor(config: Zone5Config) {
         this._config = config;
         this._express = express();
         this._router = Router(this.config.routerOptions);
         this._server = null;
+        this._authnz = {};
 
+        //setup database connection manager
         if (config.dbDriver && config.dbDriver.manager) {
             this._manager = new config.dbDriver.manager(config.dbDriver);
         } else {
@@ -66,15 +80,20 @@ export class Zone5 {
                 'Error: Zone5 Configuration was missing the connection manager constructor.'
             );
         }
+
+        //Setup Built-In Auth Adapaters
+        FailClosedAdapter.register(this);
+        TestingAdapter.register(this);
     }
 
     /**
-     * Retrieve the connection manager instance
+     * Add an auth adapter to Zone5
      *
-     * @return DbConnectionManager
+     * @param adapter
+     *        The adapter to register with zone 5
      */
-    public get manager(): DbConnectionManager {
-        return this._manager;
+    public addAuthAdapter(adapter: AuthAdapter) {
+        this._authnz[adapter.name] = adapter;
     }
 
     /**

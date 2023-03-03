@@ -35,16 +35,16 @@ export class ContextImpl implements Context {
     /**
      * Get the access security object for binding request security functions.
      *
-     * @param request
-     *        The
-     * @returns
+     * @returns Security
      */
     public get security(): Security {
         return this._security;
     }
 
     /**
+     * Retrieve the current database transaction
      *
+     * @returns DbTransaction
      */
     public get transaction(): DbTransaction {
         return this._transaction;
